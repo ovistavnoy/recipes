@@ -68,13 +68,12 @@ jQuery.nl2br = function(varTest){
         var categoryId = $(this).data('id');
         var html = '';
         $('#categoryName').text(getCategoryNameById(categoryId));
-        $('#addRecipe').data('category_id', categoryId);
+        $('.recipe-add').data('category_id', categoryId);
         $("a.recipe-add").on("click", addRecipePage);
         var recipes = Recipe.getRecipes(categoryId);
         if(recipes.length) {
             $('#emptyRecipes').hide();
             $('#recipes').show();
-            $('.ui-filterable').show();
             for(var i=0; i<recipes.length; i++) {
                 html += '<li><a class="recipe-page" data-id="'+recipes[i].id+'" href="#RecipePage">'+recipes[i].name+'</a></li>';
             }
@@ -85,7 +84,6 @@ jQuery.nl2br = function(varTest){
         } else {
             $('#emptyRecipes').show();
             $('#recipes').hide();
-            $('.ui-filterable').hide();
         }
 
     }
