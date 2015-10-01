@@ -14,6 +14,7 @@
 <div data-role="page" id="mainPage">
     <div data-role="header">
         <h1>Рецепты</h1>
+        <a id="exit" href="#" data-icon="power" data-iconpos="notext" title="Главная">Выйти</a>
     </div>
     <div data-role="content">
         <a href="#addRecipePage"  data-role="button" data-inline="true" data-icon="plus">Добавить рецепт</a>
@@ -32,12 +33,14 @@
     </div>
 </div>
 
-<div data-role="page" class="" id="RecipesPage">
+<div data-role="page" id="RecipesPage">
     <div data-role="header" class="">
         <a href="#CategoriesPage" data-icon="bars" data-iconpos="notext" title="Категории">Категории</a>
         <h1 id="categoryName"></h1>
+        <a class="recipe-add" id="addRecipe" href="#addRecipePage" data-icon="plus" data-iconpos="notext" title="Добавить рецепт">Добавить рецепт</a>
     </div>
     <div data-role="content">
+        <span id="emptyRecipes" style="display:none;">К сожалению в этой категории нет рецептов. Желаете <a class="recipe-add" href="#addRecipePage">добавить</a>?</span>
         <ul data-role="listview" id="recipes" data-filter="true" data-filter-placeholder="Поиск рецепта..."></ul>
     </div>
 </div>
