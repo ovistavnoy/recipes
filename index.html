@@ -4,10 +4,15 @@
     <meta name="viewport" content="initial-scale=1, minimum-scale=1, maximum-scale=1">
     <meta charset="utf-8">
     <title>Рецепты</title>
-    <link rel="stylesheet"  href="css/themes/default/jquery.mobile-1.4.0.min.css">
-    <link rel="stylesheet"  href="css/app.css">
-    <script src="js/jquery.js"></script>
-    <script src="js/jquery.mobile-1.4.0.min.js"></script>
+    <!--<link rel="stylesheet"  href="css/themes/default/jquery.mobile-1.4.0.min.css">-->
+    <link rel="stylesheet" href="css/themes/custom/recipes.min.css">
+    <link rel="stylesheet" href="css/themes/custom/jquery.mobile.icons.min.css">
+    <link rel="stylesheet" href="css/themes/custom/jquery.mobile.structure-1.4.5.min.css">
+    <link rel="stylesheet" href="css/app.css">
+
+    <script src="js/jquery-1.11.3.min.js"></script>
+    <script src="js/jquery.mobile-1.4.5.min.js"></script>
+    <script src="js/jquery-validate.min.js"></script>
 </head>
 <body>
 
@@ -17,15 +22,15 @@
         <a id="exit" href="#" data-icon="power" data-iconpos="notext" title="Главная">Выйти</a>
     </div>
     <div data-role="content">
-        <a href="#addRecipePage"  data-role="button" data-inline="true" data-icon="plus">Добавить рецепт</a>
-        <a href="#CategoriesPage" data-role="button" data-inline="true" data-icon="bars">Каталог рецептов</a>
+        <a href="#editorRecipePage"  data-role="button" data-transition="pop" data-inline="true" data-icon="plus">Добавить рецепт</a>
+        <a href="#CategoriesPage" data-role="button" data-transition="slide" data-inline="true" data-icon="bars">Каталог рецептов</a>
     </div>
 </div>
 
 
 <div data-role="page" id="CategoriesPage">
     <div data-role="header">
-        <a href="#mainPage" data-icon="home" data-iconpos="notext" title="Главная">Главная</a>
+        <a href="#mainPage" data-icon="home" data-transition="slide" data-direction="reverse" data-iconpos="notext" title="Главная">Главная</a>
         <h1>Категории</h1>
     </div>
     <div data-role="content">
@@ -35,13 +40,13 @@
 
 <div data-role="page" id="RecipesPage">
     <div data-role="header" class="">
-        <a href="#CategoriesPage" data-icon="bars" data-iconpos="notext" title="Категории">Категории</a>
+        <a href="#CategoriesPage" data-icon="bars" data-transition="slide" data-direction="reverse" data-iconpos="notext" title="Категории">Категории</a>
         <h1 id="categoryName"></h1>
-        <a class="recipe-add" id="addRecipe" href="#addRecipePage" data-icon="plus" data-iconpos="notext" title="Добавить рецепт">Добавить рецепт</a>
+        <a class="recipe-add" id="addRecipe" href="#editorRecipePage" data-transition="pop" data-icon="plus" data-iconpos="notext" title="Добавить рецепт">Добавить рецепт</a>
     </div>
     <div data-role="content">
         <ul data-role="listview" id="recipes" data-filter="true" data-filter-placeholder="Поиск рецепта..."></ul>
-        <span id="emptyRecipes" style="display:none;">К сожалению в этой категории нет рецептов. Желаете <a class="recipe-add" href="#addRecipePage">добавить</a>?</span>
+        <span id="emptyRecipes" style="display:none;">К сожалению в этой категории нет рецептов. Желаете <a class="recipe-add" href="#editorRecipePage">добавить</a>?</span>
     </div>
 </div>
 
@@ -49,29 +54,59 @@
     <div data-role="header" class="">
         <a href="#" data-icon="arrow-l" data-iconpos="notext" data-rel="back" title="Назад">Назад</a>
         <h1 id="recipeName"></h1>
+        <div class="ui-btn-right" data-role="controlgroup" data-type="horizontal">
+            <a href="#editorRecipePage" data-role="button" class="recipe-id" id="editRecipe" data-transition="pop" data-icon="edit" data-iconpos="notext">Редактировать</a>
+            <a href="#popupDeleteRecipe" data-rel="popup" data-position-to="window" data-role="button" class="recipe-id" data-icon="delete" data-iconpos="notext">Удалить</a>
+            <div data-role="popup" id="popupDeleteRecipe" data-dismissible="false" style="max-width:400px;" class="ui-corner-all">
+               <div data-role="header" class="ui-corner-top">
+                   <h1>Удаление рецепта</h1>
+               </div>
+                <div data-role="content" class="ui-corner-bottom ui-content">
+                    <p>Вы уверены что хотите удалить этот рецепт?</p>
+                    <a href="#" data-role="button" data-inline="true" data-rel="back">Нет</a>
+                    <a href="#CategoriesPage" data-role="button" data-inline="true" id="deleteRecipe" data-transition="flow">Да</a>
+                </div>
+            </div>
+        </div>
     </div>
     <div data-role="content" id="recipeContent">
 
     </div>
 </div>
 
-<div data-role="page" id="addRecipePage">
+
+
+<div data-role="page" id="editorRecipePage">
     <div data-role="header">
         <a href="#mainPage" data-icon="home" data-iconpos="notext" title="Главная">Главная</a>
         <h1>Новый рецепт</h1>
     </div>
     <div data-role="content">
-        <form action="#mainPage" id="addRecipeForm">
-            <input type="text" id="recipe_name" name="name" placeholder="Название" value="" autofocus="autofocus" required="">
-            <select id="recipe_category" name="category" data-native-menu="false" required="">
+        <form id="addRecipeForm">
+            <input type="hidden" name="id" id="recipe_id">
+            <div data-role="fieldcontainer">
+                <input type="text" id="recipe_name" name="name" placeholder="Название" value="" class="required" required autofocus="autofocus">
+            </div>
+            <select id="recipe_category" name="category" data-native-menu="false" class="required" required >
                     <option>Выберите категорию</option>
             </select>
-            <textarea cols="40" rows="8" id="recipe_ingredients" name="ingredients" placeholder="Ингридиенты" required=""></textarea>
-            <textarea cols="40" rows="8" id="recipe_description" name="description" placeholder="Описание" required=""></textarea>
-            <textarea cols="40" rows="8" id="recipe_comment" name="comment" placeholder="Комментарий"></textarea>
-            <label>
-                <input type="checkbox" id="recipe_used" name="used">Пробывала
-            </label>
+            <div data-role="fieldcontainer">
+                <textarea cols="40" rows="8" id="recipe_ingredients" name="ingredients" placeholder="Ингридиенты" class="required" required ></textarea>
+            </div>
+            <div data-role="fieldcontainer">
+                <textarea cols="40" rows="8" id="recipe_description" name="description" placeholder="Описание" class="required" required ></textarea>
+            </div>
+            <div data-role="fieldcontainer">
+                <textarea cols="40" rows="8" id="recipe_comment" name="comment" placeholder="Комментарий"></textarea>
+            </div>
+            <div data-role="fieldcontainer">
+                <label for="recipe_used">Пробывал Олежка?</label>
+                <select name="used" id="recipe_used" data-role="flipswitch">
+                    <option value="0" selected>Нет</option>
+                    <option value="1">Да</option>
+                </select>
+            </div>
+
             <button class="ui-btn" id="submitRecipe">Добавить</button>
         </form>
     </div>
