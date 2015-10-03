@@ -4,7 +4,7 @@
     <meta name="viewport" content="initial-scale=1, minimum-scale=1, maximum-scale=1">
     <meta charset="utf-8">
     <title>Рецепты</title>
-    <!--<link rel="stylesheet"  href="css/themes/default/jquery.mobile-1.4.0.min.css">-->
+
     <link rel="stylesheet" href="css/themes/custom/recipes.min.css">
     <link rel="stylesheet" href="css/themes/custom/jquery.mobile.icons.min.css">
     <link rel="stylesheet" href="css/themes/custom/jquery.mobile.structure-1.4.5.min.css">
@@ -22,8 +22,9 @@
         <a id="exit" href="#" data-icon="power" data-iconpos="notext" title="Главная">Выйти</a>
     </div>
     <div data-role="content">
-        <a href="#editorRecipePage"  data-role="button" data-transition="pop" data-inline="true" data-icon="plus">Добавить рецепт</a>
-        <a href="#CategoriesPage" data-role="button" data-transition="slide" data-inline="true" data-icon="bars">Каталог рецептов</a>
+        <a href="#editorRecipePage"  data-role="button" data-transition="pop" data-icon="plus">Добавить рецепт</a>
+        <a href="#CategoriesPage" data-role="button" data-transition="slide" data-icon="bars">Каталог рецептов</a>
+        <a href="#" id="clearStorage" data-role="button" data-icon="refresh">Очистить базу</a>
     </div>
 </div>
 
@@ -32,6 +33,7 @@
     <div data-role="header">
         <a href="#mainPage" data-icon="home" data-transition="slide" data-direction="reverse" data-iconpos="notext" title="Главная">Главная</a>
         <h1>Категории</h1>
+        <a href="#RecipesPage" class="recipe-fav" data-icon="heart" data-transition="slide" title="Любимые">Любимые</a>
     </div>
     <div data-role="content">
         <ul data-role="listview" id="categories" data-filter="true" data-filter-placeholder="Поиск категории..."></ul>
@@ -46,20 +48,22 @@
     </div>
     <div data-role="content">
         <ul data-role="listview" id="recipes" data-filter="true" data-filter-placeholder="Поиск рецепта..."></ul>
-        <span id="emptyRecipes" style="display:none;">К сожалению в этой категории нет рецептов. Желаете <a class="recipe-add" href="#editorRecipePage">добавить</a>?</span>
+        <div id="emptyRecipes" class="text-center" style="display:none;">К сожалению в этой категории нет рецептов. Желаете <a class="recipe-add" href="#editorRecipePage">добавить</a>?</div>
+        <div id="emptyFav" class="text-center" style="display:none;">К сожалению любимых рецептов пока нет.</div>
     </div>
 </div>
 
 <div data-role="page" id="RecipePage">
     <div data-role="header" class="">
         <a href="#" data-icon="arrow-l" data-iconpos="notext" data-rel="back" title="Назад">Назад</a>
-        <h1 id="recipeName"></h1>
+        <h1>Рецепт</h1>
         <div class="ui-btn-right" data-role="controlgroup" data-type="horizontal">
-            <a href="#editorRecipePage" data-role="button" class="recipe-id" id="editRecipe" data-transition="pop" data-icon="edit" data-iconpos="notext">Редактировать</a>
+            <a href="#" data-role="button" id="ToggleFavRecipe" data-icon="heart" data-iconpos="notext">Любимый</a>
+            <a href="#editorRecipePage" data-role="button" class="recipe-id " id="editRecipe" data-transition="pop" data-icon="edit" data-iconpos="notext">Редактировать</a>
             <a href="#popupDeleteRecipe" data-rel="popup" data-position-to="window" data-role="button" class="recipe-id" data-icon="delete" data-iconpos="notext">Удалить</a>
             <div data-role="popup" id="popupDeleteRecipe" data-dismissible="false" style="max-width:400px;" class="ui-corner-all">
                <div data-role="header" class="ui-corner-top">
-                   <h1>Удаление рецепта</h1>
+                   <h1>Удаление</h1>
                </div>
                 <div data-role="content" class="ui-corner-bottom ui-content">
                     <p>Вы уверены что хотите удалить этот рецепт?</p>
@@ -100,7 +104,7 @@
                 <textarea cols="40" rows="8" id="recipe_comment" name="comment" placeholder="Комментарий"></textarea>
             </div>
             <div data-role="fieldcontainer">
-                <label for="recipe_used">Пробывал Олежка?</label>
+                <label for="recipe_used">Пробовал Олежка?</label>
                 <select name="used" id="recipe_used" data-role="flipswitch">
                     <option value="0" selected>Нет</option>
                     <option value="1">Да</option>

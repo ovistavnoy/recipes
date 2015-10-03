@@ -28,10 +28,10 @@ jQuery.nl2br = function(varTest){
                 description: {required: true}
             },
             messages: {
-                name:        {required: "Please enter recipe name."},
-                category:    {required: "Please choose category."},
-                ingredients: {required: "Please enter ingredients."},
-                description: {required: "Please enter description."}
+                name:        {required: "Введите имя рецепта."},
+                category:    {required: "Выберите категорию."},
+                ingredients: {required: "Введите ингридиенты."},
+                description: {required: "Введите описание."}
             },
             errorPlacement: function (error, element) {
                 var elName = element.prop('name');
@@ -44,8 +44,27 @@ jQuery.nl2br = function(varTest){
             }
         });
 
+        $('a[href="#editorRecipePage"]').on("click", function() {
+            $('#addRecipeForm').trigger('reset');
+        });
+
+        $('a[href="#CategoriesPage"]').on("click", function() {
+            $('#CategoriesPage').find('input[data-type="search"]').val("");
+            $('#categories').listview().listview('refresh');
+        });
+
+        $('a[href="#RecipesPage"]').on("click", function() {
+            $('#RecipesPage').find('input[data-type="search"]').val("");
+            $('#recipes').listview().listview('refresh');
+        });
+
         $('#exit').on('click', function() {
             navigator.app.exitApp();
+        });
+
+        $('#clearStorage').on('click', function() {
+            Recipe.clearStorage();
+            updateListCategories();
         })
     });
 
@@ -68,23 +87,17 @@ jQuery.nl2br = function(varTest){
             data.id = $('#recipe_id').val();
         }
         Recipe.saveRecipe(data, function(){
-            console.log('callback')
-            $('#addRecipeForm').trigger('reset');
-            console.log(5);
             if(action == 'edit') {
-                console.log(6);
                 $('#recipe_id').val('');
                 $('#submitRecipe').text('Добавить');
                 recipePage(data.id);
                 $('.recipe-page[data-id='+data.id+']').text(data.name);
                 $.mobile.back();
             } else {
-                console.log(7);
                 $.mobile.navigate('#mainPage');
             }
-            console.log(8);
             updateListCategories();
-            console.log(9);
+            setTimeout(function() {$('#addRecipeForm').trigger('reset');}, 1000);
         });
     }
 
@@ -108,14 +121,39 @@ jQuery.nl2br = function(varTest){
         $('#recipe_category').html(SelectHtml);
 
         $("a.recipe-category").on("click", categoryPage);
+        $("a.recipe-fav").on("click", favoritePage);
+    }
+
+    function favoritePage() {
+        var html = '';
+        $('#categoryName').text('Любимые');
+        $("a.recipe-add").hide();
+        var recipes = Recipe.getFavRecipes();
+        console.log(recipes)
+        $('#emptyRecipes').hide();
+        if(recipes.length) {
+            $('#emptyFav').hide();
+            $('#recipes').show();
+            for(var i=0; i<recipes.length; i++) {
+                html += '<li><a class="recipe-page" data-transition="slide" data-id="'+recipes[i].id+'" href="#RecipePage">'+recipes[i].name+'</a></li>';
+            }
+            $('#recipes').html(html);
+            $('#recipes').listview().listview('refresh');
+            $("a.recipe-page").on("click", recipePage);
+        } else {
+            $('#emptyFav').show();
+            $('#recipes').hide();
+        }
     }
 
     function categoryPage() {
         var categoryId = $(this).data('id');
         var html = '';
         $('#categoryName').text(getCategoryNameById(categoryId));
+        $("a.recipe-add").show();
         $("a.recipe-add").on("click", function() {editorRecipePage(categoryId)} );
         var recipes = Recipe.getRecipes(categoryId);
+        $('#emptyFav').hide();
         if(recipes.length) {
             $('#emptyRecipes').hide();
             $('#recipes').show();
@@ -130,12 +168,9 @@ jQuery.nl2br = function(varTest){
             $('#emptyRecipes').show();
             $('#recipes').hide();
         }
-
     }
 
     function editorRecipePage(data) {
-        console.log('editor');
-        console.log(data);
         if(data instanceof Object) {
             $('#submitRecipe').text('Изменить');
             $('#recipe_id').val(data.id);
@@ -154,24 +189,31 @@ jQuery.nl2br = function(varTest){
     }
 
     function recipePage(id) {
-        var recipeId;
-        if(id instanceof Object) {
-            recipeId = $(this).data('id');
-        } else {
-            recipeId = id;
-        }
-
+        var recipeId = id instanceof Object ? $(this).data('id') : id;
         var recipe = Recipe.getRecipe(recipeId);
+        console.log(recipe)
+        $("#editRecipe").unbind("click");
         $("#editRecipe").on("click", function() {
             editorRecipePage(Recipe.getRecipe(recipeId));
         });
+        $("#deleteRecipe").unbind("click");
         $("#deleteRecipe").on("click", function() {
             Recipe.removeRecipe(recipeId);
             updateListCategories();
         });
-        console.log(recipe);
-        $('#recipeName').text(recipe.name);
+        if(recipe.inFav) $("#ToggleFavRecipe").addClass('ui-alt-icon');
+        else             $("#ToggleFavRecipe").removeClass('ui-alt-icon');
+        $("#ToggleFavRecipe").unbind("click");
+        $("#ToggleFavRecipe").click(function() {
+            if(recipe.inFav) {
+                Recipe.removeFromFavRecipe(recipe.id);
+                favoritePage();
+            } else Recipe.addToFavRecipe(recipe.id);
+            $(this).toggleClass('ui-alt-icon');
+            recipe.inFav = !recipe.inFav;
+        });
         var html = '';
+        html += '<h3 class="text-center">'+recipe.name+'</h3>';
         html += '<b>Категория:</b> '+getCategoryNameById(recipe.category)+'<br><br>';
         html += '<b>Добавлено:</b> '+getNiceDateTime(recipe.datetime)+'<br><br>';
         html += '<b>Ингридиенты:</b><div>'+ $.nl2br(recipe.ingredients)+'</div><br>';
@@ -179,8 +221,7 @@ jQuery.nl2br = function(varTest){
         if(recipe.comment) {
             html += '<b>Комментарий:</b><div>'+$.nl2br(recipe.comment)+'</div><br>';
         }
-        html += '<b>Пробывал Олежка?</b> '+(recipe.used ? 'Да' : 'Нет');
-
+        html += '<b>Пробовал Олежка?</b> '+(recipe.used ? 'Да' : 'Нет');
         $('#recipeContent').html(html);
 
     }
@@ -188,7 +229,6 @@ jQuery.nl2br = function(varTest){
     function editRecipe() {
         return false;
     }
-
 
     function getCategoryNameById(categoryId) {
         for(var i=0; i<categories.length; i++) {
@@ -232,6 +272,7 @@ function sName(i, ii) {
 var Recipe = (function(){
 
     var storageName = 'recipes';
+    var storageFavName = 'recipesFav';
     var recipeList = {
         'data': [],
         'lastId': 0
@@ -240,7 +281,6 @@ var Recipe = (function(){
     function _saveRecipe(data, callback) {
         var restoreRecipes = JSON.parse(localStorage.getItem(storageName));
         if(data.id != undefined) {
-            console.log('Update');
             for(var i=0; i<restoreRecipes.data.length; i++) {
                 if(restoreRecipes.data[i].id == data.id) {
                     restoreRecipes.data[i] = $.extend({}, restoreRecipes.data[i], data);
@@ -249,8 +289,8 @@ var Recipe = (function(){
             }
             localStorage.setItem(storageName, JSON.stringify(restoreRecipes));
         } else {
-            console.log('Add');
             data.datetime = new Date().getTime();
+            data.inFav = false;
             if(restoreRecipes != null) {
                 data.id = ++restoreRecipes.lastId;
                 restoreRecipes.data.push(data);
@@ -261,25 +301,22 @@ var Recipe = (function(){
                 localStorage.setItem(storageName, JSON.stringify(recipeList));
             }
         }
-        console.log(11);
-
-        callback();
-        console.log(33);
-
+        if(callback != undefined) callback();
     }
 
-    function _getRecipes(categoryId) {
+    function _getRecipes(params) {
         var result = [];
         var restoreRecipes = JSON.parse(localStorage.getItem(storageName));
         if(restoreRecipes != null) {
             for(var i=0; i<restoreRecipes.data.length; i++) {
-                if((categoryId != undefined && categoryId == restoreRecipes.data[i].category) || categoryId == undefined) {
+                if((params.categoryId != undefined && params.categoryId == restoreRecipes.data[i].category) ||
+                   (params.ids != undefined && params.ids.indexOf(restoreRecipes.data[i].id) !== -1)
+                ) {
                     result.push(restoreRecipes.data[i]);
                 }
             }
             result.sort(sName)
         }
-
         return result;
     }
 
@@ -315,7 +352,6 @@ var Recipe = (function(){
     function _countRecipeByCategories() {
         var result = {};
         var restoreRecipes = JSON.parse(localStorage.getItem(storageName));
-       // localStorage.setItem(storageName, JSON.stringify(recipeList));
         if(restoreRecipes != null) {
             for(var i=0; i<restoreRecipes.data.length; i++) {
                 if(result[restoreRecipes.data[i].category] == undefined) result[restoreRecipes.data[i].category] = 0;
@@ -323,7 +359,39 @@ var Recipe = (function(){
             }
         }
         return result;
+    }
 
+    function _addToFavRecipe(id) {
+        var restoreRecipes = JSON.parse(localStorage.getItem(storageFavName));
+        if(restoreRecipes != null) restoreRecipes.push(id);
+        else                       restoreRecipes = [id];
+        localStorage.setItem(storageFavName, JSON.stringify(restoreRecipes));
+        var recipe = _getRecipe(id);
+        recipe.inFav = true;
+        _saveRecipe(recipe);
+    }
+
+    function _removeFromFavRecipe(id) {
+        var restoreRecipes = JSON.parse(localStorage.getItem(storageFavName));
+        if(restoreRecipes != null) {
+            var i = restoreRecipes.indexOf(id);
+            if(i !== -1) {
+                restoreRecipes.splice(i, 1);
+                localStorage.setItem(storageFavName, JSON.stringify(restoreRecipes));
+                var recipe = _getRecipe(id);
+                recipe.inFav = false;
+                _saveRecipe(recipe);
+            }
+        }
+    }
+
+    function _getFavRecipes() {
+        return _getRecipes({ids: JSON.parse(localStorage.getItem(storageFavName))});
+    }
+
+    function _clearStorage() {
+        localStorage.removeItem(storageName);
+        localStorage.removeItem(storageFavName);
     }
 
     return {
@@ -331,16 +399,28 @@ var Recipe = (function(){
             _saveRecipe(data, callback);
         },
         getRecipes: function(categoryId) {
-            return _getRecipes(categoryId);
+            return _getRecipes({categoryId: categoryId});
         },
         getRecipe: function(id) {
             return _getRecipe(id);
         },
         removeRecipe: function(id) {
-            return _removeRecipe(id);
+            _removeRecipe(id);
         },
         countRecipeByCategories: function() {
             return _countRecipeByCategories();
+        },
+        getFavRecipes: function() {
+            return _getFavRecipes();
+        },
+        addToFavRecipe: function(id) {
+            _addToFavRecipe(id);
+        },
+        removeFromFavRecipe: function(id) {
+            _removeFromFavRecipe(id);
+        },
+        clearStorage: function() {
+            _clearStorage();
         }
     }
 
